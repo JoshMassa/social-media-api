@@ -1,11 +1,25 @@
 const usernames = [
     'absolute_unit',
     'Admin',
+    'AppearingEngineering',
     'ARandomUser',
     'catsrcool',
     'CisTheBestLanguage',
+    'CodeCraftTech',
+    'CodeCraftersHQ',
+    'CodeMasterTech',
+    'CodingNinjaTech',
+    'CodingShark',
+    'ComputerCoding',
+    'ComputerProgramming',
+    'DasEngineering',
+    'DevProCoder',
+    'DevTools',
     'DigitalGuru',
     'dogsarebetter',
+    'EngiDevGeek',
+    'FreexSoftware',
+    'FullStackGenius',
     'helpmeprogram',
     'iliftdaily',
     'InstaMarketer',
@@ -13,9 +27,21 @@ const usernames = [
     'Lrn2Code',
     'newuser7',
     'NumberOneCoder',
-    'SocialMediaPro',
+    'PairProgrammer',
+    'PairSoftware',
+    'ProgCodeTechie',
+    'ProgrammingAmy',
+    'Rcoding',
     'SecretSauce',
+    'SocialMediaPro',
+    'SoftEngTechie',
+    'SoftwareHardware',
+    'TechProdigyCo',
+    'TechSavvyDev',
     'Test',
+    'VolunteerEngineer',
+    'WebDevWizard',
+    'WebEnginNerd',
     'ZebraLord9000'
 ];
 
@@ -42,9 +68,7 @@ const getRandomUser = () => `${getRandomArrItem(usernames)}`;
 const getRandomThoughts = (int) => {
     let results = [];
     for (let i = 0; i < int; i++) {
-        results.push({
-            thoughtText: getRandomArrItem(thoughtsBodies),
-        });
+        results.push(getRandomArrItem(thoughtsBodies));
     }
     return results;
 };
@@ -60,4 +84,4 @@ const getThoughtReactions = (int) => {
     return results;
 };
 
-module.exports = { getRandomThoughts, getThoughtReactions, usernames }
+module.exports = { getRandomThoughts, getThoughtReactions, getRandomUser }

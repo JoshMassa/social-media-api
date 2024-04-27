@@ -1,6 +1,6 @@
 const connection = require('../config/connection');
 const { User, Thought } = require('../models');
-const { getRandomThoughts, getThoughtReactions, usernames } = require('./data');
+const { getRandomThoughts, getRandomUser, getThoughtReactions } = require('./data');
 
 connection.on('error', (err) => err);
 
@@ -29,37 +29,52 @@ connection.once('open', async () => {
     }
 
     const users = [];
-    const randomUsernames = usernames.sort(() => 0.5 - Math.random());
+    const usedUsernames = new Set();
 
-    for (let i = 0; i < Math.min(5, randomUsernames.length); i++) {
-        const username = randomUsernames[i];
-        const email = `${username.toLowerCase().replace(/\s+/g, '')}@example.com`;
-        const randomThoughts = getRandomThoughts(Math.ceil(Math.random() * 3));
+    for (let i = 0; i < 5; i++) {
+        let username;
+        do {
+            username = getRandomUser();
+        } while (usedUsernames.has(username));
+        usedUsernames.add(username);
 
-        const thoughts = [];
-        for (let j = 0; j < randomThoughts.length; j++) {
-            const thoughtReactions = getThoughtReactions(Math.ceil(Math.random() * 5));
-            const newThought = await Thought.create({
-                thoughtText: randomThoughts[j].thoughtText,
+        const email = `${username.toLowerCase()}@example.com`;
+        const friends = [];
+        const thoughtText = getRandomThoughts(3);
+
+        let thoughts;
+        try {
+            thoughts = await Thought.insertMany(thoughtText.map(text => {
+                const reactions = getThoughtReactions(Math.ceil(Math.random() * 5)).map(reaction => ({
+                    reactionBody: reaction.reactionBody,
+                    username: reaction.username
+                }));
+
+                return {
+                    thoughtText: text,
+                    username,
+                    reactions
+                };
+            }));
+        
+            const thoughtIds = thoughts.map(doc => doc._id)
+
+            users.push({
                 username,
-                reactions: thoughtReactions
+                email,
+                thoughts: thoughtIds,
+                friends
             });
-            thoughts.push(newThought._id)
+        } catch (err) {
+            console.error('Error inserting thoughts for', username, ': ', err);
         }
-
-        users.push({
-            username,
-            email,
-            thoughts
-        });
     }
 
     try {
-        await User.collection.insertMany(users);
+        const userData = await User.insertMany(users);
         console.log('Users successfully inserted');
-    } catch (error) {
-        console.error('Error inserting users: ', error);
-        return;
+    } catch (err) {
+        console.error('Error inserting users: ', err)
     }
 
     console.info('Seeding complete! 🌱');
