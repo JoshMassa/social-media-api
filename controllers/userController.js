@@ -1,11 +1,9 @@
-const { Schema } = require('mongoose');
-const { User, Thought } = require('../models');
+const { Thought, User } = require('../models');
 
 module.exports = {
     async getUsers(req, res) {
         try {
-            const users = await User.find()
-            .select('-__v');
+            const users = await User.find();
 
             res.json(users);
         } catch (err) {
@@ -17,7 +15,6 @@ module.exports = {
             const user = await User.findOne({ _id: req.params.userId })
                 .populate('thoughts')
                 .populate('friends')
-                .select('-__v');
 
                 if (!user) {
                     return res.status(404).json({ message: 'No user found with that ID' });
@@ -31,9 +28,16 @@ module.exports = {
     async createUser(req, res) {
         try {
             const userData = await User.create(req.body);
+
+            const user = await User.findOneAndUpdate(
+                { username: req.body.username },
+                { email: req.body.email },
+                { new: true }
+            );
+
             res.json(userData);
         } catch (err) {
-            res.status(500).json(err);
+            res.status(500).json({ message: 'Error creating user'});
         }
     },
     async updateUser(req, res) {
@@ -57,7 +61,7 @@ module.exports = {
             if (err.name === 'ValidationError') {
                 res.status(400).json(err);
             } else {
-                res.status(500).json(err);
+                res.status(500).json({ message: 'Error updating user' });
             }
         }
     },
