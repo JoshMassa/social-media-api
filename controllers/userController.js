@@ -85,15 +85,71 @@ module.exports = {
         }
     },
     async addFriend(req, res) {
+        const userId = req.params.userId;
+        const friendId = req.params.friendId;
+        
         try {
-            const user = getSingleUser();
+            if (userId === friendId) {
+                return res.status(400).json({ message: 'Users cannot add themselves as a friend'});
+            }
+
+            const user = await User.findByIdAndUpdate(
+                userId,
+                { $addToSet: { friends: friendId } },
+                { new: true, runValidators: true }
+            ).populate('friends');
+
             if (!user) {
                 return res.status(404).json({ message: 'No user found with that ID'});
             }
 
-            const friends = user.friends
+            const friend = await User.findByIdAndUpdate(
+                friendId,
+                { $addToSet: { friends: userId } },
+                { new: true, runValidators: true }
+            );
+
+            if (!friend) {
+                return res.status(404).json({ message: 'No user found with that ID' });
+            }
+
+            res.json({ message: `${user.username} and ${friend.username} are now friends!`})
         } catch (err) {
             res.status(500).json(err);
+        }
+    },
+    async removeFriend(req, res) {
+        const userId = req.params.userId;
+        const friendId = req.params.friendId;
+
+        try {
+            if (userId === friendId) {
+                return res.status(400).json({ message: 'Users cannot remove themsevles as a friend'})
+            }
+
+            const userUpdate = await User.findByIdAndUpdate(
+                userId,
+                { $pull: { friends: friendId } },
+                { new: true }
+            );
+
+            if (!userUpdate) {
+                return res.status(404).json({ message: 'No user found with that ID' });
+            }
+
+            const friendUpdate = await User.findByIdAndUpdate(
+                friendId,
+                { $pull: { friends: userId } },
+                { new: true }
+            );
+
+            if (!friendUpdate) {
+                return res.status(404).json({ message: 'No user found with that ID' });
+            }
+
+            res.json({ message: `${userUpdate.username} and ${friendUpdate.username} are no longer friends`})
+        } catch (err) {
+            res.status(500).json({ message: 'Failed to remove friend', error: err});
         }
     }
 };
