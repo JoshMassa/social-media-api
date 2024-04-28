@@ -1,4 +1,4 @@
-// Import necessary models
+// Require necessary models
 const { Thought, User } = require('../models');
 // Export all controllers so they can be used in routes
 module.exports = {
@@ -8,7 +8,7 @@ module.exports = {
             const thoughts = await Thought.find()
             // Send 'thoughts' data to client in JSON format
             res.json(thoughts);
-            // Catch errors and send JSON message to client
+        // Catch errors and send JSON message to client
         } catch (err) {
             res.status(500).json({ message: 'Error retrieving thoughts' });
         }
@@ -61,16 +61,16 @@ module.exports = {
                 { thoughtText: req.body.thoughtText }, // Create a new object with a property of 'thoughtText' that is set according to the request body
                 { new: true, runValidators: true } // Ensure the modified document is returned after updating and validate the update against the schema
             );
-            // If no thought was found return this error
+            // If no thought was found, return this error
             if (!thoughtData) {
                 return res.status(404).json({ message: 'No thought found with that ID' });
             }
-            // If the specific thought was found, send 'thoughtData' data to client in JSON format
+            // If the specific thought was found and updated, send 'thoughtData' data to client in JSON format
             res.json(thoughtData)
         // Catch errors and send JSON message to client
         } catch (err) {
             if (err.name === 'ValidationError') {
-                res.status(400).json(err);
+                res.status(400).json({ message: 'Error occured during validation' });
             } else {
                 res.status(500).json(err);
             }
@@ -80,11 +80,11 @@ module.exports = {
         try {
             // Find a document via its thoughtId from the request parameters and delete it from the database, storing the deleted document in the 'thought' variable
             const thought = await Thought.findByIdAndDelete(req.params.thoughtId);
-            // If no thought was found return this error
+            // If no thought was found with that ID, return the following error
             if (!thought) {
                 return res.status(404).json({ message: 'No thought found with that ID' });
             }
-            // If the specific thought was found, send this message to the client
+            // If the specific thought was found, send the following message to the client in JSON format
             res.json({ message: 'Thought deleted successfully!' });
         // Catch errors and send JSON message to client
         } catch (err) {
@@ -93,11 +93,11 @@ module.exports = {
     },
     async newReaction(req, res) {
         try {
-            // Retrieve thoughtId from the URL parameters of the request and assign it to the variable 'thoughtId'
+            // Retrieve thoughtId from the URL parameters of the request and store it in the 'thoughtId' variable
             const thoughtId = req.params.thoughtId;
             // Find a specific thought via its thoughtId
             const thought = await Thought.findById(thoughtId);
-            // If no thought was found return this error
+            // If no thought was found, return the following error
             if (!thought) {
                 return res.status(404).json({ message: 'No thought found with that ID' });
             }
@@ -134,30 +134,35 @@ module.exports = {
     },
     async deleteReaction(req, res) {
         try {
+            // Retrieve thoughtId from the parameter of the request and store it in the 'thoughtId' variable
             const thoughtId = req.params.thoughtId;
+            // Retrieve reactionId from the parameter of the request and store it in the 'reactionId' variable
             const reactionId = req.params.reactionId;
-
+            // Find a specific thought by its ID and store it in the 'thought' variable
             const thought = await Thought.findById(thoughtId);
+            // If no thought with that ID was found, return the following error
             if (!thought) {
                 return res.status(404).json({ message: 'No thought found with that ID' });
             }
-
+            // Search for a specific reaction in the thought.reactions array whose reactionId matches the reactionId provided and store it in the 'reactionToDelete' variable
             const reactionToDelete = thought.reactions.find(reaction => reaction.reactionId.toString() === reactionId);
+            // If no reaction with that ID was found, return the following error
             if (!reactionToDelete) {
                 return res.status(404).json({ message: 'No reaction found with that ID' });
             }
-
+            // Find a specific thought by its ID
             const updateResult = await Thought.findByIdAndUpdate(
-                thoughtId,
-                { $pull: { reactions: { reactionId } } },
-                { new: true }
+                thoughtId, // Specifies which document to find and update
+                { $pull: { reactions: { reactionId } } }, // Remove a specific reaction from the thought using its reactionId
+                { new: true } // Return the updated document
             );
-
+            // If no thought or reaction with the specified IDs were found, return the following error
             if (!updateResult) {
                 return res.status(404).json({ message: 'No thought found with that ID or reaction does not exist' });
             }
-
+            // If the specific thought and reaction were found, send the following message to the client
             res.json({ message: 'Reaction deleted successfully! Here is the updated thought: ', updatedThought: updateResult });
+        // Catch errors and send JSON message to client
         } catch (err) {
             res.status(500).json({ message: 'Error deleting reaction' });
             console.log(err);

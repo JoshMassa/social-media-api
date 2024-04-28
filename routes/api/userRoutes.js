@@ -1,3 +1,4 @@
+// Require necessary packages and files
 const router = require('express').Router();
 const {
     addFriend,

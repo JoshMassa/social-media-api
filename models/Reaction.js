@@ -1,10 +1,11 @@
+// Require necessary packages
 const { Schema, Types } = require('mongoose');
-
+// Define new reactionSchema
 const reactionSchema = new Schema(
     {
         reactionId: {
-            type: Schema.Types.ObjectId,
-            default: () => new Types.ObjectId(),
+            type: Schema.Types.ObjectId, // Define the data type as an ObjectId using the mongoose package
+            default: () => new Types.ObjectId(), // Assigns a new ObjectId as its default value whenever a new document is created
         },
         reactionBody: {
             type: String,
@@ -19,6 +20,7 @@ const reactionSchema = new Schema(
             type: Date,
             default: Date.now,
             get: (val) => {
+                // Format the timestamp
                 const timestampFormatter = new Intl.DateTimeFormat('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -34,7 +36,7 @@ const reactionSchema = new Schema(
     },
     {
         toJson: {
-            getters: true
+            getters: true // Enables getter functions when converting MongoDB documents to JSON format
         },
         id: false
     }

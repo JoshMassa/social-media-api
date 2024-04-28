@@ -1,5 +1,6 @@
+// Require necessary packages
 const { Schema, model } = require('mongoose');
-
+// Define new userSchema
 const userSchema = new Schema(
     {
         username: {
@@ -16,32 +17,32 @@ const userSchema = new Schema(
         },
         thoughts: [
             {
-                type: Schema.Types.ObjectId,
-                ref: 'thought'
+                type: Schema.Types.ObjectId, // Define the data type as an ObjectId using the mongoose package
+                ref: 'thought' // References the thought collection
             },
         ],
         friends: [
             {
-                type: Schema.Types.ObjectId,
-                ref: 'user'
+                type: Schema.Types.ObjectId, // Define the data type as an ObjectId using the mongoose package
+                ref: 'user' // References the user collection
             }
         ]
     },
     {
         toJSON: {
-            virtuals: true,
-            versionKey: false
+            virtuals: true, // Includes virtual properties when documents are converted to JSON format
+            versionKey: false // Disables the inclusion of the version key "__v"
         },
         id: false
     }
 );
 
 userSchema
-    .virtual('friendCount')
+    .virtual('friendCount') // Define a virtual property 'friendCount'
     .get(function () {
-        return this.friends.length;
+        return this.friends.length; // Calculate and return the number of friends a user has
     });
-
+// Compile the userSchema into a User model and specifies the collection name 'user'
 const User = model('user', userSchema);
 
 module.exports = User;
